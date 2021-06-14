@@ -1,58 +1,63 @@
-package com.example.checklister
+package com.example.checklister;
 
-import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
-import com.example.checklister.databinding.ActivityMainBinding
+import android.os.Bundle
+import android.util.SparseBooleanArray
+import android.widget.ArrayAdapter
+import android.widget.Toast
+import com.example.checklister.R
+import com.example.checklister.R.id.*
+import kotlinx.android.synthetic.main.activity_main.*
+
+private val Int.text: Any
+    get() {return 0}
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        // Initializing the array lists and the adapter
+        var itemlist = arrayListOf<String>()
+        var adapter =ArrayAdapter<String>(this,
+            android.R.layout.simple_list_item_multiple_choice
+            , itemlist)
+        // Adding the items to the list when the add button is pressed
+        add.setOnClickListener {
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+            itemlist.add(editText.text.toString())
+            listView.adapter =  adapter
+            adapter.notifyDataSetChanged()
+            // This is because every time when you add the item the input space or the eidt text space will be cleared
+            editText.text.clear()
+        }
+        // Clearing all the items in the list when the clear button is pressed
+        clear.setOnClickListener {
 
-        setSupportActionBar(binding.toolbar)
-
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
-
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+            itemlist.clear()
+            adapter.notifyDataSetChanged()
+        }
+         // Adding the toast message to the list when an item on the list is pressed
+        listView.setOnItemClickListener { adapterView, view, i, l ->
+            Toast.makeText(this, "You Selected the item --> "+itemlist.get(i), Toast.LENGTH_SHORT).show()
+        }
+        // Selecting and Deleting the items from the list when the delete button is pressed
+        delete.setOnClickListener {
+            val position: SparseBooleanArray = listView.checkedItemPositions
+            val count = listView.count
+            var item = count - 1
+            while (item >= 0) {
+                if (position.get(item))
+                {
+                    adapter.remove(itemlist.get(item))
+                }
+                item--
+            }
+            position.clear()
+            adapter.notifyDataSetChanged()
         }
     }
+}
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
-    }
+private fun Any.clear() {
+    TODO("Not yet implemented")
 }
